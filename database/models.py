@@ -22,6 +22,73 @@ class Base(DeclarativeBase):
     pass
 
 
+class NexoraWallet(Base):
+    """Per-Telegram-user Nexora Coins wallet."""
+    __tablename__ = "nexora_wallets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
+    balance: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    lifetime_earned: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    lifetime_spent: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class NexoraWalletTransaction(Base):
+    """Immutable wallet ledger entry."""
+    __tablename__ = "nexora_wallet_transactions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    amount: Mapped[int] = mapped_column(Integer)
+    balance_after: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(32), index=True)
+    reference: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class NexoraGiftCode(Base):
+    """Main-owner issued redeem code for Nexora Coins."""
+    __tablename__ = "nexora_gift_codes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    coins: Mapped[int] = mapped_column(Integer)
+    max_uses: Mapped[int] = mapped_column(Integer, default=1)
+    uses: Mapped[int] = mapped_column(Integer, default=0)
+    expires_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class NexoraGiftRedemption(Base):
+    """Idempotent gift-code redemption record."""
+    __tablename__ = "nexora_gift_redemptions"
+    __table_args__ = (UniqueConstraint("gift_code_id", "user_id", name="uq_gift_redemption"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    gift_code_id: Mapped[int] = mapped_column(ForeignKey("nexora_gift_codes.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    redeemed_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class NexoraPaymentOrder(Base):
+    """Manual UPI purchase submitted by a user and reviewed by the main owner."""
+    __tablename__ = "nexora_payment_orders"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    coins: Mapped[int] = mapped_column(Integer)
+    amount_inr: Mapped[int] = mapped_column(Integer)
+    utr: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+    reviewed_by: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    reviewed_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class Owner(Base):
     __tablename__ = "owners"
 
