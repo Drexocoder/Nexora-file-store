@@ -1,14 +1,11 @@
-"""V2 template registry.
+"""V2 manifest-driven template registry.
 
-Legacy File Store, Link Protect, and Cricket Tournament templates are not
-registered here. New templates must be added through a manifest-driven entry.
-
-The registry deliberately starts empty so the Factory cannot accidentally
-offer an old clone while the V2 template catalog is being rebuilt.
+The catalog starts empty until a new template is intentionally released.
+Legacy clone implementations are not registered here.
 """
 
 from dataclasses import dataclass, field
-from typing import Callable, Sequence
+from typing import Sequence
 
 
 @dataclass(frozen=True, slots=True)
