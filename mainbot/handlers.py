@@ -835,6 +835,57 @@ def register_main_handlers(app: Client) -> None:
             except RPCError:
                 await cq.message.edit_text(SUPPORT_TEXT, reply_markup=back_kb())
 
+        elif data == "balance":
+            await _send_balance(cq.message, user_id)
+
+        elif data == "balance:add":
+            await cq.message.edit_text(
+                "**Add Balance**\n\n"
+                "> Manual UPI only.\n"
+                "> Choose a package below.\n\n"
+                "→ After payment, submit the UTR for review.",
+                reply_markup=InlineKeyboardMarkup([
+                    [btn(PRIMARY, "100 Coins · ₹10", "upi:100:10", icon=EMOJI_FLAG_IN)],
+                    [btn(PRIMARY, "250 Coins · ₹25", "upi:250:25", icon=EMOJI_FLAG_IN)],
+                    [btn(PRIMARY, "600 Coins · ₹50", "upi:600:50", icon=EMOJI_FLAG_IN)],
+                    [btn(PRIMARY, "1,300 Coins · ₹100", "upi:1300:100", icon=EMOJI_FLAG_IN)],
+                    [btn(DANGER, "Back", "balance", icon=EMOJI_OCTAGON)],
+                ]),
+            )
+
+        elif data.startswith("upi:"):
+            _, coins, amount = data.split(":")
+            main_pending[user_id] = PendingAction(
+                "await_utr",
+                {"coins": int(coins), "amount": int(amount)},
+            )
+            upi = settings.upi_id or "Not configured"
+            await cq.message.edit_text(
+                "**UPI Payment**\n\n"
+                f"→ Amount: **₹{int(amount)}**\n"
+                f"→ Coins: **{int(coins):,}**\n"
+                f"→ UPI ID: {upi}\n"
+                f"→ Name: **{settings.upi_name}**\n\n"
+                "> Complete the payment, then send the UTR/reference number here.",
+                reply_markup=back_kb("balance:add"),
+            )
+
+        elif data == "balance:tx":
+            await _send_transactions(cq.message, user_id)
+
+        elif data == "redeem":
+            main_pending[user_id] = PendingAction("await_redeem")
+            await cq.message.edit_text(
+                "**Redeem Gift Code**\n\n> Send the code in your next message.",
+                reply_markup=back_kb("balance"),
+            )
+
+        elif data == "referrals":
+            await _send_referrals(client, cq.message, user_id)
+
+        elif data == "templates":
+            await _send_templates(cq.message)
+
         # ── newbot ──
         elif data == "newbot":
             main_pending[user_id] = PendingAction("await_token")
