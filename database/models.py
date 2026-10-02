@@ -102,6 +102,7 @@ class NexoraReferral(Base):
 class NexoraPaymentOrder(Base):
     """Manual UPI purchase submitted by a user and reviewed by the main owner."""
     __tablename__ = "nexora_payment_orders"
+    __table_args__ = (UniqueConstraint("utr", name="uq_nexora_payment_utr"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(BigInteger, index=True)
