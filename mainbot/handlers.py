@@ -40,6 +40,16 @@ from utils.state import PendingAction, main_pending
 
 log = logging.getLogger("nexora.mainbot")
 
+# Public command menu for the main Factory bot.
+# Owner/admin controls are intentionally excluded.
+PUBLIC_COMMANDS = [
+    BotCommand("start", "Open the Nexora Factory"),
+    BotCommand("help", "How Nexora works"),
+    BotCommand("balance", "View your coin balance"),
+    BotCommand("refer", "Open your referral center"),
+    BotCommand("redeem", "Redeem a gift code"),
+]
+
 # ── Text constants ────────────────────────────────────────────────────────────
 WELCOME_TEXT = (
     "**Nex Bot Factory**\n\n"
