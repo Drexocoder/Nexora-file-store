@@ -298,6 +298,26 @@ def register_main_handlers(app: Client) -> None:
     async def support_cmd(client: Client, message: Message) -> None:
         await message.reply_text(SUPPORT_TEXT, reply_markup=back_kb())
 
+    # ── economy commands ───────────────────────────────────────────────────────
+    @app.on_message(filters.command("balance") & filters.private)
+    async def balance_cmd(client: Client, message: Message) -> None:
+        await _send_balance(message, message.from_user.id)
+
+    @app.on_message(filters.command("refer") & filters.private)
+    async def refer_cmd(client: Client, message: Message) -> None:
+        await _send_referrals(client, message, message.from_user.id)
+
+    @app.on_message(filters.command("redeem") & filters.private)
+    async def redeem_cmd(client: Client, message: Message) -> None:
+        if len(message.command) > 1:
+            await _redeem_code(message, message.command[1])
+            return
+        main_pending[message.from_user.id] = PendingAction("await_redeem")
+        await message.reply_text(
+            "**Redeem Gift Code**\n\n> Send your code in the next message.",
+            reply_markup=back_kb("balance"),
+        )
+
     # ── /newbot ───────────────────────────────────────────────────────────────
     @app.on_message(filters.command("newbot") & filters.private)
     async def newbot_cmd(client: Client, message: Message) -> None:
@@ -406,7 +426,7 @@ def register_main_handlers(app: Client) -> None:
     # ── text router ───────────────────────────────────────────────────────────
     @app.on_message(
         filters.private & filters.text
-        & ~filters.command(["start", "help", "newbot", "mybots", "rmbot", "support", "admin"])
+        & ~filters.command(["start", "help", "newbot", "mybots", "rmbot", "support", "admin", "balance", "refer", "redeem"])
     )
     async def text_router(client: Client, message: Message) -> None:
         pending = main_pending.get(message.from_user.id)
