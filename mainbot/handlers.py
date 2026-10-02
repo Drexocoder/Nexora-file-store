@@ -233,6 +233,27 @@ async def _send_templates(target) -> None:
         await target.reply_text(text, reply_markup=markup)
 
 
+async def _redeem_code(message: Message, code: str) -> None:
+    async with AsyncSessionLocal() as session:
+        ok, reason, coins = await redeem_code(session, message.from_user.id, code)
+        wallet = await get_wallet(session, message.from_user.id)
+        await session.commit()
+        balance = wallet.balance
+    if not ok:
+        await message.reply_text(
+            f"**Gift Code**\\n\\n> {reason}",
+            reply_markup=back_kb("balance"),
+        )
+        return
+    await notify_main_log(
+        f"Gift code redeemed\\n→ User: {message.from_user.id}\\n→ Coins: {coins}"
+    )
+    await message.reply_text(
+        f"**Code accepted**\\n\\n> Added **{coins} coins**.\\n→ Balance: **{balance} coins**",
+        reply_markup=back_kb("balance"),
+    )
+
+
 def register_main_handlers(app: Client) -> None:
 
     # ── /start ────────────────────────────────────────────────────────────────
@@ -434,6 +455,15 @@ def register_main_handlers(app: Client) -> None:
             return
         if pending.action == "await_token":
             await _handle_new_token(client, message)
+        elif pending.action == "await_redeem":
+            main_pending.pop(message.from_user.id, None)
+            await _redeem_code(message, message.text.strip())
+        elif pending.action == "await_utr":
+            await _handle_utr(message)
+        elif pending.action == "await_gift":
+            await _handle_gift_code(message)
+        elif pending.action in {"await_referral_reward", "await_referred_reward"}:
+            await _handle_reward_setting(message, pending.action)
         elif pending.action == "await_admin_broadcast":
             await _handle_admin_broadcast(client, message)
         elif pending.action == "await_main_fsub_channel":
