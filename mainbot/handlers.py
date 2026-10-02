@@ -471,6 +471,22 @@ def register_main_handlers(app: Client) -> None:
                 f"ID: `{user.id}`"
             )
 
+        async with AsyncSessionLocal() as session:
+            referral = await qualify_referral(session, user.id)
+            await session.commit()
+        if referral:
+            referrer_id, amount = referral
+            await notify_owner(
+                f"Referral qualified\n→ Referrer: {referrer_id}\n→ User: {user.id}\n→ Reward: {amount} coins"
+            )
+            try:
+                await client.send_message(
+                    referrer_id,
+                    f"**Referral qualified**\n\n> Your invite completed verification.\n→ **+{amount} coins** added.",
+                )
+            except RPCError:
+                pass
+
         try:
             await message.reply_photo(IMG_WELCOME, caption=WELCOME_TEXT, reply_markup=main_menu_kb())
         except RPCError:
