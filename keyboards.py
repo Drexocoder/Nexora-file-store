@@ -1,4 +1,4 @@
-"""Shared keyboard + message helpers for Nexora File Store."""
+"""Shared keyboard and message helpers for Nexora Bot Factory."""
 from __future__ import annotations
 
 import inspect
@@ -51,12 +51,12 @@ EMOJI_X       = "5454350746407419714"   # ❌
 EMOJI_SMILE   = "6183599299499137107"   # ☺️
 EMOJI_GUARD   = "6309677544782174678"   # 💂  (owner / admin panel)
 EMOJI_CROWN   = "5237699328843200968"   # 👑  main owner / superadmin
-EMOJI_LINK    = "5215519737181096462"   # 🔗  link protect
+EMOJI_LINK    = "5215519737181096462"   # 🔗  link / referral
 EMOJI_LOCK    = "5373123633101267608"   # 🔒  protected content
 EMOJI_CHART   = "5219978203285888739"   # 📊  statistics / charts
 EMOJI_FIRE    = "5213452215527677338"   # 🔥  top / popular
 EMOJI_GLOBE   = "5215854116564648552"   # 🌐  platform-wide
-EMOJI_FOLDER  = "5218777718840180631"   # 📁  file store template
+EMOJI_FOLDER  = "5218777718840180631"   # 📁  bot workspace
 EMOJI_TRASH   = "5215209357985613414"   # 🗑  delete
 
 # ── Cricket-specific emojis ───────────────────────────────────────────────────
@@ -181,32 +181,8 @@ def template_kb() -> InlineKeyboardMarkup:
     not exposed while the new template registry is being built.
     """
     return InlineKeyboardMarkup([
-        [btn(PRIMARY, "🧩 Templates are being rebuilt", "templates:soon", icon=EMOJI_SPARKLE)],
+        [btn(PRIMARY, "Templates are being rebuilt", "templates", icon=EMOJI_SPARKLE)],
         [btn(DANGER,  "Cancel", "home", icon=EMOJI_OCTAGON)],
     ])
 
 
-def cricket_owner_panel_kb() -> InlineKeyboardMarkup:
-    """Owner panel keyboard for cricket bots."""
-    return InlineKeyboardMarkup([
-        [
-            btn(PRIMARY, "Tours",     "own:crik:tours",    icon=EMOJI_TROPHY),
-            btn(PRIMARY, "Players",   "own:crik:players",  icon=EMOJI_GUARD),
-        ],
-        [
-            btn(YELLOW,  "Pending",   "own:crik:pending",  icon=EMOJI_BELL),
-            btn(YELLOW,  "Captains",  "own:crik:captains", icon=EMOJI_CROWN),
-        ],
-        [
-            btn(BLUE,    "Questions", "own:crik:questions",icon=EMOJI_SPARKLE),
-            btn(BLUE,    "Settings",  "own:crik:settings", icon=EMOJI_TOOLS),
-        ],
-        [
-            btn(GREEN,   "Stats",     "own:crik:stats",    icon=EMOJI_CHART),
-            btn(GREEN,   "Logs",      "own:crik:logs",     icon=EMOJI_SIREN),
-        ],
-        [
-            btn(BLUE,    "Channels / FSub", "own:crik:channels", icon=EMOJI_DEVIL),
-        ],
-        [btn(RED,    "Close",         "own:close",         icon=EMOJI_OCTAGON)],
-    ])
