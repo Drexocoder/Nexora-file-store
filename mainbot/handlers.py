@@ -1046,6 +1046,119 @@ def register_main_handlers(app: Client) -> None:
 
     # ── superadmin callbacks ──────────────────────────────────────────────────
     async def _handle_admin_callback(client: Client, cq: CallbackQuery, data: str, user_id: int) -> None:
+        if data == "adm:economy":
+            async with AsyncSessionLocal() as session:
+                economy = await get_economy_settings(session)
+                pending = await session.scalar(
+                    select(func.count()).select_from(NexoraPaymentOrder).where(
+                        NexoraPaymentOrder.status == "pending"
+                    )
+                ) or 0
+            text = (
+                "**Economy Controls**\n\n"
+                f"→ Referrer reward: **{economy.referral_reward} coins**\n"
+                f"→ New-user bonus: **{economy.referred_reward} coins**\n"
+                f"→ Pending UPI orders: **{pending}**\n\n"
+                "> Main owner controls these values."
+            )
+            markup = InlineKeyboardMarkup([
+                [
+                    btn(PRIMARY, "Referrer Reward", "adm:ref_reward", icon=EMOJI_STAR),
+                    btn(PRIMARY, "New-user Bonus", "adm:ref_bonus", icon=EMOJI_STAR),
+                ],
+                [btn(SUCCESS, "Create Gift Code", "adm:gift", icon=EMOJI_CHECK)],
+                [btn(DEFAULT, "Pending Payments", "adm:payments", icon=EMOJI_FLAG_IN)],
+                [btn(DANGER, "Back", "adm:home", icon=EMOJI_OCTAGON)],
+            ])
+            await cq.message.edit_text(text, reply_markup=markup)
+            return
+
+        if data == "adm:ref_reward":
+            main_pending[user_id] = PendingAction("await_referral_reward")
+            await cq.message.edit_text(
+                "**Set Referrer Reward**\n\n> Send the coin amount for each qualified referral.",
+                reply_markup=back_kb("adm:economy"),
+            )
+            return
+
+        if data == "adm:ref_bonus":
+            main_pending[user_id] = PendingAction("await_referred_reward")
+            await cq.message.edit_text(
+                "**Set New-user Bonus**\n\n> Send the coin amount for the referred user.",
+                reply_markup=back_kb("adm:economy"),
+            )
+            return
+
+        if data == "adm:gift":
+            main_pending[user_id] = PendingAction("await_gift")
+            await cq.message.edit_text(
+                "**Create Gift Code**\n\n"
+                "> Format: coins uses days\n"
+                "→ Example: 500 10 7\n"
+                "→ Use 0 days for no expiry.",
+                reply_markup=back_kb("adm:economy"),
+            )
+            return
+
+        if data == "adm:payments":
+            async with AsyncSessionLocal() as session:
+                result = await session.execute(
+                    select(NexoraPaymentOrder)
+                    .where(NexoraPaymentOrder.status == "pending")
+                    .order_by(NexoraPaymentOrder.created_at.asc())
+                    .limit(15)
+                )
+                orders = result.scalars().all()
+            if not orders:
+                await cq.message.edit_text(
+                    "**Pending Payments**\n\n> No UPI payments are waiting for review.",
+                    reply_markup=back_kb("adm:economy"),
+                )
+                return
+            rows = []
+            lines = ["**Pending Payments**", "", "> Select an order to review"]
+            for order in orders:
+                lines.append(f"→ #{order.id} · ₹{order.amount_inr} · {order.coins:,} coins")
+                rows.append([
+                    btn(YELLOW, f"Order #{order.id}", f"adm:pay:{order.id}", icon=EMOJI_FLAG_IN)
+                ])
+            rows.append([btn(DANGER, "Back", "adm:economy", icon=EMOJI_OCTAGON)])
+            await cq.message.edit_text("\n".join(lines), reply_markup=InlineKeyboardMarkup(rows))
+            return
+
+        if data.startswith("adm:pay:"):
+            order_id = int(data.split(":")[2])
+            async with AsyncSessionLocal() as session:
+                order = await session.get(NexoraPaymentOrder, order_id)
+            if order is None:
+                await cq.answer("Order not found.", show_alert=True)
+                return
+            text = (
+                f"**Payment #{order.id}**\n\n"
+                f"→ User: {order.user_id}\n"
+                f"→ Amount: ₹{order.amount_inr}\n"
+                f"→ Coins: {order.coins:,}\n"
+                f"→ UTR: {order.utr or 'missing'}\n"
+                f"→ Status: **{order.status}**"
+            )
+            markup = InlineKeyboardMarkup([
+                [
+                    btn(SUCCESS, "Approve", f"adm:pay_approve:{order.id}", icon=EMOJI_CHECK),
+                    btn(DANGER, "Reject", f"adm:pay_reject:{order.id}", icon=EMOJI_X),
+                ],
+                [btn(DEFAULT, "Back", "adm:payments", icon=EMOJI_OCTAGON)],
+            ])
+            await cq.message.edit_text(text, reply_markup=markup)
+            return
+
+        if data.startswith("adm:pay_approve:"):
+            await _review_payment(client, cq, int(data.split(":")[2]), user_id, True)
+            return
+
+        if data.startswith("adm:pay_reject:"):
+            await _review_payment(client, cq, int(data.split(":")[2]), user_id, False)
+            return
+
         if data == "adm:fsub":
             async with AsyncSessionLocal() as session:
                 result = await session.execute(select(MainBotChannel))
