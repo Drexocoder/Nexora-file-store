@@ -967,26 +967,14 @@ def register_main_handlers(app: Client) -> None:
         # ── platform stats ──
         elif data == "stats":
             async with AsyncSessionLocal() as session:
-                total_owners = await session.scalar(select(func.count()).select_from(Owner))
-                total_bots = await session.scalar(select(func.count()).select_from(BotModel))
-                total_users = await session.scalar(select(func.count()).select_from(CloneUser))
-                fs_bots = await session.scalar(
-                    select(func.count()).select_from(BotModel).where(BotModel.bot_type == "filestore")
-                )
-                lp_bots = await session.scalar(
-                    select(func.count()).select_from(BotModel).where(BotModel.bot_type == "linkprotect")
-                )
-                cr_bots = await session.scalar(
-                    select(func.count()).select_from(BotModel).where(BotModel.bot_type == "cricket")
-                )
+                total_owners = await session.scalar(select(func.count()).select_from(Owner)) or 0
+                total_bots = await session.scalar(select(func.count()).select_from(BotModel)) or 0
+                total_wallets = await session.scalar(select(func.count()).select_from(NexoraWallet)) or 0
             text = (
-                "📊 **Platform Statistics**\n\n"
-                f"👑 Owners: **{total_owners}**\n"
-                f"🤖 Total Bots: **{total_bots}**\n"
-                f"   📁 File Store: **{fs_bots}**\n"
-                f"   🔗 Link Protect: **{lp_bots}**\n"
-                f"   🏏 Cricket: **{cr_bots}**\n"
-                f"👥 Total Users: **{total_users}**"
+                "**Platform Statistics**\\n\\n"
+                f"→ Owners: **{total_owners}**\\n"
+                f"→ Bots: **{total_bots}**\\n"
+                f"→ Coin wallets: **{total_wallets}**"
             )
             try:
                 await cq.message.edit_text(text, reply_markup=back_kb())
@@ -1005,7 +993,7 @@ def register_main_handlers(app: Client) -> None:
             text = (
                 f"💂 **@{bot_row.bot_username}**\n\n"
                 f"Type: {type_label}\n\n"
-                "Send `/owner` inside your bot to manage it."
+                "→ Public commands are in the bot menu.\\n→ Owner controls are kept separate."
             )
             try:
                 await cq.message.edit_text(
@@ -1248,37 +1236,24 @@ def register_main_handlers(app: Client) -> None:
 
         if data == "adm:stats":
             async with AsyncSessionLocal() as session:
-                total_owners = await session.scalar(select(func.count()).select_from(Owner))
-                total_bots = await session.scalar(select(func.count()).select_from(BotModel))
-                active_bots = await session.scalar(
-                    select(func.count()).select_from(BotModel).where(BotModel.active.is_(True))
-                )
-                total_users = await session.scalar(select(func.count()).select_from(CloneUser))
-                fs_bots = await session.scalar(
-                    select(func.count()).select_from(BotModel).where(BotModel.bot_type == "filestore")
-                )
-                lp_bots = await session.scalar(
-                    select(func.count()).select_from(BotModel).where(BotModel.bot_type == "linkprotect")
-                )
-                cr_bots = await session.scalar(
-                    select(func.count()).select_from(BotModel).where(BotModel.bot_type == "cricket")
-                )
-            text = (
-                "📊 **Platform Statistics — Superadmin View**\n\n"
-                f"👑 Owners: **{total_owners}**\n"
-                f"🤖 Total Bots: **{total_bots}** ({active_bots} active)\n"
-                f"   📁 File Store: **{fs_bots}**\n"
-                f"   🔗 Link Protect: **{lp_bots}**\n"
-                f"   🏏 Cricket: **{cr_bots}**\n"
-                f"👥 Total Users (all bots): **{total_users}**"
+                owners = await session.scalar(select(func.count()).select_from(Owner)) or 0
+                bots = await session.scalar(select(func.count()).select_from(BotModel)) or 0
+                wallets = await session.scalar(select(func.count()).select_from(NexoraWallet)) or 0
+                payments = await session.scalar(
+                    select(func.count()).select_from(NexoraPaymentOrder).where(
+                        NexoraPaymentOrder.status == "pending"
+                    )
+                ) or 0
+                referrals = await session.scalar(select(func.count()).select_from(NexoraReferral)) or 0
+            await cq.message.edit_text(
+                "**Platform Statistics**\\n\\n"
+                f"→ Owners: **{owners}**\\n"
+                f"→ Bots: **{bots}**\\n"
+                f"→ Coin wallets: **{wallets}**\\n"
+                f"→ Referrals: **{referrals}**\\n"
+                f"→ Pending payments: **{payments}**",
+                reply_markup=back_kb("adm:home"),
             )
-            try:
-                await cq.message.edit_text(
-                    text,
-                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "🔙 Back", "adm:home", icon=EMOJI_OCTAGON)]]),
-                )
-            except RPCError:
-                pass
 
         elif data == "adm:home":
             try:
@@ -1301,11 +1276,9 @@ def register_main_handlers(app: Client) -> None:
                 except RPCError:
                     pass
                 return
-            type_icon = {"linkprotect": "🔗", "cricket": "🏏", "filestore": "📁"}
             lines = ["🤖 **All Bots** (latest 20)\n"]
             for b in bots:
-                t = type_icon.get(b.bot_type or "filestore", "📁")
-                lines.append(f"{t} @{b.bot_username or b.id} — owner_id:{b.owner_id}")
+                lines.append(f"→ @{b.bot_username or b.id} — owner {b.owner_id}")
             try:
                 await cq.message.edit_text(
                     "\n".join(lines),
