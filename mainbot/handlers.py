@@ -469,7 +469,8 @@ def register_main_handlers(app: Client) -> None:
                     await message.reply_text(caption, reply_markup=InlineKeyboardMarkup(rows))
                 return
 
-        # ── First-time user notification ──────────────────────────────────────\n        if is_new:
+        # ── First-time user notification ──────────────────────────────────────
+        if is_new:
             handle = f"@{user.username}" if user.username else f"id:{user.id}"
             await notify_owner(
                 f"👤 **New user** started the main bot\n"
