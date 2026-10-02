@@ -292,6 +292,7 @@ async def _handle_utr(message: Message) -> None:
         f"UPI payment submitted\n→ Order: #{order_id}\n→ Amount: ₹{amount}\n→ Coins: {coins}",
     )
     await message.reply_text(
+    await notify_public(f"UPI payment submitted · order #{order_id} · {coins} coins")
         f"**Payment submitted**\n\n> Order: #{order_id}\n> Status: **Pending review**\n\n"
         "→ Coins are added after the UTR is approved by the main owner.",
         reply_markup=back_kb("balance"),
