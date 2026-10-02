@@ -15,7 +15,7 @@ from clonebot.handlers import register_clone_handlers
 from config import settings
 from database.engine import AsyncSessionLocal, init_db
 from database.models import Bot as BotModel
-from mainbot.handlers import register_main_handlers
+from mainbot.handlers import PUBLIC_COMMANDS, register_main_handlers
 
 logging.basicConfig(
     level=logging.INFO,
@@ -75,6 +75,7 @@ async def main() -> None:
     )
     register_main_handlers(main_app)
     await main_app.start()
+    await main_app.set_bot_commands(PUBLIC_COMMANDS)
     me = await main_app.get_me()
     log.info("Nexora File Store main bot started as @%s", me.username)
 
