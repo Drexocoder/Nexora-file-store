@@ -409,6 +409,31 @@ def register_main_handlers(app: Client) -> None:
         user = message.from_user
         main_pending.pop(user.id, None)
 
+        # ── Register the user and capture a referral before FSub ────────────────
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(select(Owner).where(Owner.telegram_id == user.id))
+            owner = result.scalar_one_or_none()
+            is_new = owner is None
+            if owner is None:
+                session.add(
+                    Owner(
+                        telegram_id=user.id,
+                        username=user.username,
+                        first_name=user.first_name,
+                    )
+                )
+                await session.flush()
+            if is_new and message.command and len(message.command) > 1:
+                payload = message.command[1]
+                if payload.startswith("ref_"):
+                    try:
+                        referrer_id = int(payload.split("_", 1)[1])
+                    except ValueError:
+                        referrer_id = 0
+                    if referrer_id:
+                        await create_referral(session, referrer_id, user.id)
+            await session.commit()
+
         # ── Main-bot force-subscribe check ────────────────────────────────────
         async with AsyncSessionLocal() as session:
             result = await session.execute(select(MainBotChannel))
@@ -437,12 +462,7 @@ def register_main_handlers(app: Client) -> None:
                     await message.reply_text(caption, reply_markup=InlineKeyboardMarkup(rows))
                 return
 
-        # ── First-time user notification ──────────────────────────────────────
-        async with AsyncSessionLocal() as session:
-            res = await session.execute(select(Owner).where(Owner.telegram_id == user.id))
-            is_new = res.scalar_one_or_none() is None
-
-        if is_new:
+        # ── First-time user notification ──────────────────────────────────────\n        if is_new:
             handle = f"@{user.username}" if user.username else f"id:{user.id}"
             await notify_owner(
                 f"👤 **New user** started the main bot\n"
