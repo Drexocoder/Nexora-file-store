@@ -657,12 +657,6 @@ def register_main_handlers(app: Client) -> None:
             await _handle_reward_setting(message, pending.action)
         elif pending.action == "await_admin_broadcast":
             await _handle_admin_broadcast(client, message)
-        elif pending.action == "await_utr":
-            await _handle_utr(message)
-        elif pending.action == "await_gift":
-            await _handle_gift_code(message)
-        elif pending.action in {"await_referral_reward", "await_referred_reward"}:
-            await _handle_reward_setting(message, pending.action)
         elif pending.action == "await_main_fsub_channel":
             await _handle_main_fsub_add(client, message)
 
