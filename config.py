@@ -36,9 +36,13 @@ class Settings:
     # Defaults to the known owner ID; can be overridden via env var.
     main_owner_id: int = int(os.environ.get("MAIN_BOT_OWNER_ID", "8186068163"))
 
-    # Channel/group id where Nexora posts its own operational logs
-    # (new owner, new clone created, clone deleted, errors).
-    main_log_channel_id: int = int(os.environ.get("MAIN_LOG_CHANNEL_ID", "0"))
+    # Platform logging channels. Environment variables can override these defaults.
+    public_log_channel_id: int = int(os.environ.get("PUBLIC_LOG_CHANNEL_ID", "-1004400108754"))
+    main_log_channel_id: int = int(os.environ.get("MAIN_LOG_CHANNEL_ID", "-1004328302242"))
+
+    # Manual UPI details shown in the Balance -> Add Balance flow.
+    upi_id: str = os.environ.get("NEXORA_UPI_ID", "")
+    upi_name: str = os.environ.get("NEXORA_UPI_NAME", "Nexora Bots")
 
 
 settings = Settings()
