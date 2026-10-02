@@ -58,54 +58,14 @@ HELP_TEXT = (
 
 SUPPORT_TEXT = f"**Nexora Support**\n\n> Need help?\n→ {SUPPORT_URL}"
 
-TYPE_LABELS = {
-    "linkprotect": "🔗 Link Protect",
-    "cricket":     "🏏 Cricket Tournament",
-    "filestore":   "📁 File Store",
-}
+def _template_label(bot_type: str | None) -> str:
+    """Resolve display metadata from the V2 registry only."""
+    if not bot_type:
+        return "Nexora V2"
+    from templates.registry import get_template
+    template = get_template(bot_type)
+    return template.name if template else "Nexora V2"
 
-CRICKET_COMMANDS = [
-    BotCommand("start",     "Start / Register for tournament"),
-    BotCommand("owner",     "Owner panel"),
-    BotCommand("start_tour","Start a new tournament"),
-    BotCommand("players",   "View registered players"),
-    BotCommand("pending",   "View pending approvals"),
-    BotCommand("stats",     "Tournament statistics"),
-    BotCommand("logs",      "Activity logs"),
-    BotCommand("settings",  "Bot settings"),
-    BotCommand("broadcast", "Broadcast to all users"),
-    BotCommand("channels",  "Force-subscribe channels"),
-]
-
-FILESTORE_COMMANDS = [
-    BotCommand("start",     "Welcome / get files"),
-    BotCommand("owner",     "Owner panel"),
-    BotCommand("files",     "Manage stored files"),
-    BotCommand("channels",  "Force-subscribe channels"),
-    BotCommand("stats",     "Statistics"),
-    BotCommand("settings",  "Bot settings"),
-    BotCommand("broadcast", "Broadcast to all users"),
-    BotCommand("logs",      "Set log channel"),
-    BotCommand("backup",    "Export data backup"),
-]
-
-LINKPROTECT_COMMANDS = [
-    BotCommand("start",     "Welcome / access links"),
-    BotCommand("owner",     "Owner panel"),
-    BotCommand("links",     "Manage protected links"),
-    BotCommand("channels",  "Force-subscribe channels"),
-    BotCommand("stats",     "Statistics"),
-    BotCommand("settings",  "Bot settings"),
-    BotCommand("broadcast", "Broadcast to all users"),
-    BotCommand("logs",      "Set log channel"),
-    BotCommand("backup",    "Export data backup"),
-]
-
-BOT_DESCRIPTIONS = {
-    "filestore":   "Store and share files with force-subscribe protection.",
-    "linkprotect": "Access protected links gated behind channel membership.",
-    "cricket":     "Register players and manage cricket tournaments with ease.",
-}
 
 BOT_ABOUT = "Powered by Nexora · {main_username}"
 
@@ -131,32 +91,34 @@ async def _get_or_create_owner(session, user) -> Owner:
     return owner
 
 
-async def _configure_clone_bot_profile(clone_client: Client, bot_type: str, main_username: str) -> None:
-    """Auto-set commands, description, and about text on a newly created clone bot."""
-    commands_map = {
-        "filestore":   FILESTORE_COMMANDS,
-        "linkprotect": LINKPROTECT_COMMANDS,
-        "cricket":     CRICKET_COMMANDS,
-    }
-    commands = commands_map.get(bot_type, FILESTORE_COMMANDS)
-    description = BOT_DESCRIPTIONS.get(bot_type, "")
-    about = BOT_ABOUT.format(main_username=f"@{main_username}")
+async def _configure_clone_bot_profile(
+    clone_client: Client, bot_type: str, main_username: str
+) -> None:
+    """Configure only public BotFather commands from the V2 template manifest."""
+    from templates.registry import get_template
+
+    template = get_template(bot_type)
+    commands = [
+        BotCommand("start", "Start the bot"),
+        BotCommand("help", "Show help"),
+    ]
+    description = "Nexora V2 Telegram bot."
+    if template:
+        commands.extend(
+            BotCommand(item.command, item.description)
+            for item in template.commands
+            if item.command not in {"owner", "admin"}
+        )
+        description = template.description
 
     try:
         await clone_client.set_bot_commands(commands)
-        log.info("Auto-set commands for %s clone", bot_type)
-    except Exception:
-        log.warning("Could not set commands for clone (non-fatal)", exc_info=True)
-
-    try:
         await clone_client.set_bot_description(description)
+        await clone_client.set_bot_short_description(
+            BOT_ABOUT.format(main_username=f"@{main_username}")
+        )
     except Exception:
-        log.warning("Could not set description for clone (non-fatal)", exc_info=True)
-
-    try:
-        await clone_client.set_bot_short_description(about)
-    except Exception:
-        log.warning("Could not set short description for clone (non-fatal)", exc_info=True)
+        log.warning("Could not configure clone profile", exc_info=True)
 
 
 def register_main_handlers(app: Client) -> None:
@@ -467,7 +429,7 @@ def register_main_handlers(app: Client) -> None:
             f"Bot: @{bot_username} (id {new_bot_id})",
         )
 
-        type_label = TYPE_LABELS.get(bot_type, "📁 File Store")
+        type_label = _template_label(bot_type)
         next_step_map = {
             "linkprotect": "Send `/owner` in your bot to configure links.",
             "cricket":     "Send `/owner` in your bot to set up your first tour and registration questions.",
@@ -610,7 +572,7 @@ def register_main_handlers(app: Client) -> None:
             if bot_row is None:
                 await cq.answer("Bot not found.", show_alert=True)
                 return
-            type_label = TYPE_LABELS.get(bot_row.bot_type or "filestore", "📁 File Store")
+            type_label = _template_label(bot_row.bot_type)
             text = (
                 f"💂 **@{bot_row.bot_username}**\n\n"
                 f"Type: {type_label}\n\n"
