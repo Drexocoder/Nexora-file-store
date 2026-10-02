@@ -1,7 +1,4 @@
-"""Nexora File Store — main bot handlers.
-
-Commands: /start /help /newbot /mybots /rmbot /support /admin
-"""
+"""Nexora Bot Factory main bot handlers.\n\nPublic commands are configured separately from owner controls.\n"""
 from __future__ import annotations
 
 import logging
