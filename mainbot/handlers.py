@@ -324,7 +324,8 @@ async def _handle_gift_code(message: Message) -> None:
     await notify_main_log(f"Gift code created\n→ Code: {code}\n→ Coins: {coins}\n→ Uses: {uses}")
     await message.reply_text(
         f"**Gift code created**\n\n→ Code: {code}\n→ Value: **{coins} coins**\n"
-        f"→ Uses: **{uses}**\n→ Expiry: **{'none' if not days else f'{days} day(s)'}**",
+    expiry_label = "none" if not days else f"{days} day(s)"
+        f"→ Uses: **{uses}**\\n→ Expiry: **{expiry_label}**",
         reply_markup=back_kb("adm:economy"),
     )
 
