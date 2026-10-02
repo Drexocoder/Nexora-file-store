@@ -30,10 +30,15 @@ def _to_async_url(raw: str) -> str:
 engine = create_async_engine(
     _to_async_url(settings.database_url),
     pool_pre_ping=True,
+    pool_size=int(__import__("os").environ.get("DB_POOL_SIZE", "10")),
+    max_overflow=int(__import__("os").environ.get("DB_MAX_OVERFLOW", "20")),
+    pool_timeout=int(__import__("os").environ.get("DB_POOL_TIMEOUT", "10")),
+    pool_recycle=1800,
     connect_args={"ssl": True},
 )
 
-AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+# Avoid implicit autoflush on read-heavy Telegram callbacks.
+AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, autoflush=False)
 
 
 async def init_db() -> None:
