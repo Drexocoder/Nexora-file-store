@@ -587,15 +587,11 @@ def register_main_handlers(app: Client) -> None:
                 )
             return
 
-        icon_map = {
-            "linkprotect": EMOJI_LINK,
-            "cricket":     EMOJI_TROPHY,
-            "filestore":   EMOJI_FOLDER,
-        }
+        icon_map = {}
         rows = []
         for b in bots:
             label = f"@{b.bot_username}" if b.bot_username else (b.bot_name or f"Bot #{b.id}")
-            icon = icon_map.get(b.bot_type or "filestore", EMOJI_FOLDER)
+            icon = EMOJI_GUARD
             rows.append([btn(SUCCESS, label, f"openpanel:{b.id}", icon=icon)])
         rows.append([btn(DANGER, "Back", "home", icon=EMOJI_OCTAGON)])
         try:
