@@ -359,7 +359,7 @@ async def _handle_reward_setting(message: Message, action: str) -> None:
 
 async def _review_payment(client: Client, cq: CallbackQuery, order_id: int, reviewer: int, approve: bool) -> None:
     async with AsyncSessionLocal() as session:
-        order = await session.get(NexoraPaymentOrder, order_id)
+        order = await session.get(NexoraPaymentOrder, order_id, with_for_update=True)
         if order is None or order.status != "pending":
             await cq.answer("This order is already reviewed.", show_alert=True)
             return
