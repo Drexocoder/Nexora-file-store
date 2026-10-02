@@ -587,7 +587,6 @@ def register_main_handlers(app: Client) -> None:
                 )
             return
 
-        icon_map = {}
         rows = []
         for b in bots:
             label = f"@{b.bot_username}" if b.bot_username else (b.bot_name or f"Bot #{b.id}")
