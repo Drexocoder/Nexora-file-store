@@ -17,7 +17,11 @@ from clonebot.handlers import register_clone_handlers
 from config import settings
 from database.engine import AsyncSessionLocal
 from database.models import Bot as BotModel
-from database.models import (\n    BotSettings, CloneUser, MainBotChannel, Owner,\n    NexoraEconomySettings, NexoraGiftCode, NexoraPaymentOrder, NexoraReferral,\n    NexoraWallet, NexoraWalletTransaction,\n)\nfrom keyboards import (
+from database.models import (
+    BotSettings, CloneUser, MainBotChannel, Owner,
+    NexoraGiftCode, NexoraPaymentOrder, NexoraReferral,
+    NexoraWallet, NexoraWalletTransaction,
+)
     BLUE, DANGER, DEFAULT, GREEN, PRIMARY, RED, SUCCESS, YELLOW,
     EMOJI_BELL, EMOJI_CHART, EMOJI_CHECK, EMOJI_CROWN, EMOJI_DEVIL,
     EMOJI_FIRE, EMOJI_FLAG_IN, EMOJI_FOLDER, EMOJI_GLOBE, EMOJI_GUARD,
@@ -29,7 +33,7 @@ from database.models import (\n    BotSettings, CloneUser, MainBotChannel, Owner
     admin_menu_kb, back_kb, btn, main_menu_kb, quote,
     template_kb, yes_no_kb,
 )
-from utils.fsub import missing_channels\nfrom utils.economy import credit, get_economy_settings, get_wallet, new_gift_code, qualify_referral, redeem_code, create_referral\nfrom utils.notify import notify_main_log, notify_owner, notify_public
+from utils.fsub import missing_channels
 from utils.state import PendingAction, main_pending
 
 log = logging.getLogger("nexora.mainbot")
