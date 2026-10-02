@@ -37,33 +37,26 @@ log = logging.getLogger("nexora.mainbot")
 
 # ── Text constants ────────────────────────────────────────────────────────────
 WELCOME_TEXT = (
-    "🇮🇳 **Nexora File Store**\n\n"
-    "Create your own Telegram Bot.\n"
-    "No coding. No limits.\n\n"
-    "📁 Unlimited Files\n"
-    "😈 Force Subscribe\n"
-    "🎤 Broadcast\n"
-    "🚨 Live Logs\n"
-    "📊 Statistics\n"
-    "💂 Owner Panel\n"
-    "🔗 Link Protect\n"
-    "🏏 Cricket Tournament\n"
-    "👑 Superadmin Access"
+    "🤖 **Nex Bot Factory**\n\n"
+    "Build. Deploy. Grow.\n\n"
+    "🧩 Ready-made Telegram templates\n"
+    "⚡ Fast deployment\n"
+    "🪙 Nexora Coins\n"
+    "👥 Referral rewards\n"
+    "🎟 Redeem codes\n"
+    "💳 Manual UPI payments\n"
+    "👑 Platform administration"
 )
 
 HELP_TEXT = (
     "🛠 **How it works**\n\n"
-    "**Step 1**\n"
-    "Talk to @BotFather, create a bot, copy its token.\n\n"
-    "**Step 2**\n"
-    "Use /newbot here and paste the token.\n\n"
-    "**Step 3**\n"
-    "Pick a template:\n"
-    "• 📁 **File Store** — store & share files\n"
-    "• 🔗 **Link Protect** — protect links behind a gate\n"
-    "• 🏏 **Cricket Tournament** — player & captain registration,\n"
-    "   tours, admin approvals, and waitlisting\n\n"
-    "Done — your bot is live instantly."
+    "1. Create a bot with @BotFather and copy its token.\n"
+    "2. Send the token to Nex Bot Factory.\n"
+    "3. Choose an available template.\n"
+    "4. If required, unlock it with Nexora Coins or the configured access method.\n"
+    "5. Nexora configures the Telegram command menu automatically.\n\n"
+    "The new template marketplace is currently being rebuilt. New templates "
+    "will appear here as they are released."
 )
 
 SUPPORT_TEXT = f"📞 Need help? Reach out to Nexora Support:\n\n{SUPPORT_URL}"
@@ -400,19 +393,13 @@ def register_main_handlers(app: Client) -> None:
                 )
                 return
 
-        main_pending[message.from_user.id] = PendingAction("await_template", {
-            "token": token,
-            "username": me.username,
-            "name": me.first_name,
-        })
-
+        main_pending.pop(message.from_user.id, None)
         await status_msg.edit_text(
             f"✅ **Bot verified:** @{me.username}\n\n"
-            "🎨 **Choose a template:**\n\n"
-            "📁 **File Store** — store & share files with users\n"
-            "🔗 **Link Protect** — protect URLs behind force-subscribe gate\n"
-            "🏏 **Cricket Tournament** — player registration, tours, admin approvals",
-            reply_markup=template_kb(),
+            "🧩 **Template marketplace is being rebuilt.**\n\n"
+            "Legacy clone templates are no longer available in the new Factory.\n"
+            "New templates will be added through the V2 template registry.",
+            reply_markup=back_kb(),
         )
 
     async def _create_bot(
