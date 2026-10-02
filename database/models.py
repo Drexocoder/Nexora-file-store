@@ -135,7 +135,7 @@ class Bot(Base):
     bot_username: Mapped[str | None] = mapped_column(String(64), nullable=True)
     bot_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
     bot_photo: Mapped[str | None] = mapped_column(Text, nullable=True)
-    bot_type: Mapped[str] = mapped_column(String(32), default="filestore", server_default="filestore")
+    bot_type: Mapped[str] = mapped_column(String(32), default="v2", server_default="v2")
     welcome_caption: Mapped[str | None] = mapped_column(Text, nullable=True)
     welcome_image: Mapped[str | None] = mapped_column(Text, nullable=True)
     log_channel: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
