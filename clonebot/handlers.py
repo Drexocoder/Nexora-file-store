@@ -50,7 +50,7 @@ from templates.cricket.handlers import (
     register_cricket_handlers,
 )
 from utils.fsub import missing_channels
-from utils.notify import notify_owner
+from utils.notify import notify_main_log, notify_owner, notify_public
 from utils.state import PendingAction, clone_pending
 
 log = logging.getLogger("nexora.clonebot")
@@ -87,12 +87,14 @@ async def _send_file(client: Client, chat_id: int, f: UploadedFile, protect: boo
 
 
 async def _log_event(client: Client, bot_row: BotModel, text: str) -> None:
-    if not bot_row.log_channel:
-        return
-    try:
-        await client.send_message(bot_row.log_channel, text)
-    except RPCError:
-        log.exception("Failed to write clone log for bot %s", bot_row.id)
+    """Write to the bot's configured log plus Nexora's platform logs."""
+    if bot_row.log_channel:
+        try:
+            await client.send_message(bot_row.log_channel, text)
+        except RPCError:
+            log.exception("Failed to write clone log for bot %s", bot_row.id)
+    await notify_main_log(text)
+    await notify_public(text)
 
 
 async def _get_bot(
