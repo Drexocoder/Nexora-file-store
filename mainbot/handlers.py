@@ -790,12 +790,32 @@ def register_main_handlers(app: Client) -> None:
                 main_channels = result.scalars().all()
             missing = await missing_channels(client, list(main_channels), user_id) if main_channels else []
             if missing:
-                await cq.answer("You haven't joined all required channels yet!", show_alert=True)
+                rows = []
+                for ch in missing:
+                    label = ch.title or ch.username or "Channel"
+                    link = f"https://t.me/{ch.username}" if ch.username else None
+                    rows.append([
+                        btn(BLUE, f"Join {label}", url=link, icon=EMOJI_DEVIL)
+                        if link else btn(BLUE, label, "noop_main", icon=EMOJI_DEVIL)
+                    ])
+                rows.append([btn(GREEN, "Verify Membership", "main_verify", icon=EMOJI_CHECK)])
+                text = (
+                    "**Verification pending**\\n\\n"
+                    "> Some channels are still missing.\\n"
+                    f"→ Remaining: **{len(missing)}**\\n"
+                    "> Only the remaining channels are shown."
+                )
+                try:
+                    await cq.message.edit_caption(text, reply_markup=InlineKeyboardMarkup(rows))
+                except RPCError:
+                    await cq.message.edit_text(text, reply_markup=InlineKeyboardMarkup(rows))
+                await cq.answer(f"{len(missing)} channel(s) still required.", show_alert=True)
                 return
             try:
                 await cq.message.edit_caption(WELCOME_TEXT, reply_markup=main_menu_kb())
             except RPCError:
                 await cq.message.edit_text(WELCOME_TEXT, reply_markup=main_menu_kb())
+            await cq.answer("Verification complete.", show_alert=False)
 
         elif data == "noop_main":
             await cq.answer("Use the join button above first.", show_alert=True)
