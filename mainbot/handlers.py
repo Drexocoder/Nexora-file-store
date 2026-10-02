@@ -30,36 +30,33 @@ from keyboards import (
     template_kb, yes_no_kb,
 )
 from utils.fsub import missing_channels
-from utils.notify import notify_owner
+from utils.notify import notify_main_log, notify_owner, notify_public
 from utils.state import PendingAction, main_pending
 
 log = logging.getLogger("nexora.mainbot")
 
 # ── Text constants ────────────────────────────────────────────────────────────
 WELCOME_TEXT = (
-    "🤖 **Nex Bot Factory**\n\n"
-    "Build. Deploy. Grow.\n\n"
-    "🧩 Ready-made Telegram templates\n"
-    "⚡ Fast deployment\n"
-    "🪙 Nexora Coins\n"
-    "👥 Referral rewards\n"
-    "🎟 Redeem codes\n"
-    "💳 Manual UPI payments\n"
-    "👑 Platform administration"
+    "**Nex Bot Factory**\n\n"
+    "> Build and deploy Telegram bots from one clean control panel.\n\n"
+    "→ Templates\n"
+    "→ Fast deployment\n"
+    "→ Nexora Coins\n"
+    "→ Referrals and redeem codes\n"
+    "→ Manual UPI purchases\n\n"
+    "Use the buttons below to continue."
 )
 
 HELP_TEXT = (
-    "🛠 **How it works**\n\n"
-    "1. Create a bot with @BotFather and copy its token.\n"
-    "2. Send the token to Nex Bot Factory.\n"
-    "3. Choose an available template.\n"
-    "4. If required, unlock it with Nexora Coins or the configured access method.\n"
-    "5. Nexora configures the Telegram command menu automatically.\n\n"
-    "The new template marketplace is currently being rebuilt. New templates "
-    "will appear here as they are released."
+    "**How it works**\n\n"
+    "> 1. Create your bot with @BotFather.\n"
+    "> 2. Send the token here.\n"
+    "> 3. Choose a released template.\n"
+    "> 4. Nexora configures the BotFather command menu automatically.\n\n"
+    "The legacy clone templates are hidden while the V2 registry is rebuilt."
 )
 
-SUPPORT_TEXT = f"📞 Need help? Reach out to Nexora Support:\n\n{SUPPORT_URL}"
+SUPPORT_TEXT = f"**Nexora Support**\n\n> Need help?\n→ {SUPPORT_URL}"
 
 TYPE_LABELS = {
     "linkprotect": "🔗 Link Protect",
@@ -117,13 +114,11 @@ def _is_main_owner(user_id: int) -> bool:
     return user_id == settings.main_owner_id
 
 
-async def _log_main(client: Client, text: str) -> None:
-    if not settings.main_log_channel_id:
-        return
-    try:
-        await client.send_message(settings.main_log_channel_id, text)
-    except RPCError:
-        log.exception("Failed to write to main log channel")
+async def _log_main(client: Client, text: str, *, public: bool = True) -> None:
+    """Write platform events to the owner log and, when safe, the public log."""
+    await notify_main_log(text)
+    if public:
+        await notify_public(text)
 
 
 async def _get_or_create_owner(session, user) -> Owner:
