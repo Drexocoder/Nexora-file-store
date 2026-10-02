@@ -1,8 +1,4 @@
-"""Nexora File Store — entrypoint.
-
-Starts the main bot (Nexora File Store) plus a Kurigram Client for every
-already-registered clone bot, and keeps the process alive.
-"""
+"""Nexora Bot Factory entrypoint."""
 from __future__ import annotations
 
 import asyncio
@@ -39,7 +35,6 @@ async def start_existing_clones() -> None:
 async def main() -> None:
     log.info("Initializing database schema...")
     await init_db()
-    await run_migrations()
 
     main_app = Client(
         name="nexora_main",
