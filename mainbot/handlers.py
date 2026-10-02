@@ -552,12 +552,12 @@ def register_main_handlers(app: Client) -> None:
         try:
             await message.reply_photo(
                 IMG_ADMIN,
-                caption="👑 **Nexora Superadmin Panel**\n\nFull platform access.",
+                caption="**Nexora Control Room**\n\n> Main-owner controls only.",
                 reply_markup=admin_menu_kb(),
             )
         except RPCError:
             await message.reply_text(
-                "👑 **Nexora Superadmin Panel**\n\nFull platform access.",
+                "**Nexora Control Room**\n\n> Main-owner controls only.",
                 reply_markup=admin_menu_kb(),
             )
 
@@ -671,7 +671,7 @@ def register_main_handlers(app: Client) -> None:
             )
             return
 
-        status_msg = await message.reply_text(f"{TXT_WARN} 🛠 Checking token...")
+        status_msg = await message.reply_text("**Checking token**\n\n> Connecting to Telegram…")
 
         probe = Client(
             name=f"probe_{message.from_user.id}",
@@ -1296,7 +1296,7 @@ def register_main_handlers(app: Client) -> None:
         elif data == "adm:home":
             try:
                 await cq.message.edit_text(
-                    "👑 **Nexora Superadmin Panel**\n\nFull platform access.",
+                "**Nexora Control Room**\n\n> Main-owner controls only.",
                     reply_markup=admin_menu_kb(),
                 )
             except RPCError:
