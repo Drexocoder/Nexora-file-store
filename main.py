@@ -47,7 +47,7 @@ async def main() -> None:
     await main_app.start()
     await main_app.set_bot_commands(PUBLIC_COMMANDS)
     me = await main_app.get_me()
-    log.info("Nexora File Store main bot started as @%s", me.username)
+    log.info("Nexora Bot Factory started as @%s", me.username)
 
     from utils.notify import set_main_client
     set_main_client(main_app)
