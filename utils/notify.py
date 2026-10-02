@@ -1,4 +1,4 @@
-"""Shared utility: send activity notifications to the main owner's DM."""
+"""Shared utility for private-owner and platform log notifications."""
 from __future__ import annotations
 
 import logging
