@@ -1,4 +1,7 @@
-"""Nexora Bot Factory main bot handlers.\n\nPublic commands are configured separately from owner controls.\n"""
+"""Nexora Bot Factory main bot handlers.
+
+Public commands are configured separately from owner controls.
+"""
 from __future__ import annotations
 
 import logging
@@ -19,6 +22,7 @@ from database.models import (
     NexoraGiftCode, NexoraPaymentOrder, NexoraReferral,
     NexoraWallet, NexoraWalletTransaction,
 )
+from keyboards import (
     BLUE, DANGER, DEFAULT, GREEN, PRIMARY, RED, SUCCESS, YELLOW,
     EMOJI_BELL, EMOJI_CHART, EMOJI_CHECK, EMOJI_CROWN, EMOJI_DEVIL,
     EMOJI_FIRE, EMOJI_FLAG_IN, EMOJI_FOLDER, EMOJI_GLOBE, EMOJI_GUARD,
@@ -30,6 +34,7 @@ from database.models import (
     admin_menu_kb, back_kb, btn, main_menu_kb, quote,
     template_kb, yes_no_kb,
 )
+from utils.economy import credit, create_referral, get_economy_settings, get_wallet, new_gift_code, qualify_referral, redeem_code
 from utils.fsub import missing_channels
 from utils.state import PendingAction, main_pending
 
