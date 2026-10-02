@@ -74,6 +74,31 @@ class NexoraGiftRedemption(Base):
     redeemed_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class NexoraEconomySettings(Base):
+    """Singleton platform economy controls managed by the main owner."""
+    __tablename__ = "nexora_economy_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
+    referral_reward: Mapped[int] = mapped_column(Integer, default=50, server_default="50")
+    referred_reward: Mapped[int] = mapped_column(Integer, default=25, server_default="25")
+    updated_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class NexoraReferral(Base):
+    """One referral relationship; a referred user can only qualify once."""
+    __tablename__ = "nexora_referrals"
+    __table_args__ = (UniqueConstraint("referred_user_id", name="uq_nexora_referred_user"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    referrer_user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    referred_user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    qualified: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    rewarded_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class NexoraPaymentOrder(Base):
     """Manual UPI purchase submitted by a user and reviewed by the main owner."""
     __tablename__ = "nexora_payment_orders"
