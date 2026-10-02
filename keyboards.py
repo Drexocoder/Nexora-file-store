@@ -161,12 +161,14 @@ def yes_no_kb(yes_cb: str, no_cb: str) -> InlineKeyboardMarkup:
 
 
 def template_kb() -> InlineKeyboardMarkup:
-    """Shown after token validation — user picks bot type."""
+    """V2 template marketplace placeholder.
+
+    Legacy File Store, Link Protect, and Cricket templates are intentionally
+    not exposed while the new template registry is being built.
+    """
     return InlineKeyboardMarkup([
-        [btn(PRIMARY, "📁 File Store",         "tpl:filestore",   icon=EMOJI_FOLDER)],
-        [btn(SUCCESS, "🔗 Link Protect",       "tpl:linkprotect", icon=EMOJI_LINK)],
-        [btn(YELLOW,  "🏏 Cricket Tournament", "tpl:cricket",     icon=EMOJI_TROPHY)],
-        [btn(DANGER,  "Cancel",                "home",            icon=EMOJI_OCTAGON)],
+        [btn(PRIMARY, "🧩 Templates are being rebuilt", "templates:soon", icon=EMOJI_SPARKLE)],
+        [btn(DANGER,  "Cancel", "home", icon=EMOJI_OCTAGON)],
     ])
 
 
