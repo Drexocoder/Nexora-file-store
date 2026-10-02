@@ -524,7 +524,7 @@ def register_main_handlers(app: Client) -> None:
             token = pending.data["token"]
             bot_username = pending.data["username"]
             bot_name = pending.data["name"]
-            type_label = TYPE_LABELS.get(bot_type, "📁 File Store")
+            type_label = _template_label(bot_type)
             try:
                 await cq.message.edit_text(f"🛠 Creating **{type_label}** bot…")
             except RPCError:
