@@ -9,7 +9,7 @@ import asyncio
 import logging
 
 from pyrogram import Client
-from sqlalchemy import select, text
+from sqlalchemy import select
 from bot_manager import manager
 from clonebot.handlers import register_clone_handlers
 from config import settings
@@ -34,31 +34,6 @@ async def start_existing_clones() -> None:
             await manager.start_clone(bot_row.id, bot_row.bot_token, register_clone_handlers)
         except Exception:
             log.exception("Failed to start clone bot %s (@%s)", bot_row.id, bot_row.bot_username)
-
-
-# ── Lightweight startup migrations ────────────────────────────────────────────
-# `init_db()` only creates tables that don't exist yet — it won't add new
-# columns to a table that's already there. Any column added to models.py
-# after the first deploy needs an explicit ALTER TABLE here (IF NOT EXISTS
-# keeps every entry safe to re-run on every restart).
-MIGRATIONS: list[str] = [
-    "ALTER TABLE cricket_settings ADD COLUMN IF NOT EXISTS base_price_options TEXT",
-    "ALTER TABLE cricket_players ADD COLUMN IF NOT EXISTS team_name VARCHAR(128)",
-    "ALTER TABLE cricket_players ADD COLUMN IF NOT EXISTS team_logo TEXT",
-    "ALTER TABLE cricket_questions ADD COLUMN IF NOT EXISTS captain_only BOOLEAN DEFAULT FALSE",
-]
-
-
-async def run_migrations() -> None:
-    async with AsyncSessionLocal() as session:
-        for stmt in MIGRATIONS:
-            try:
-                await session.execute(text(stmt))
-            except Exception:
-                log.exception("Migration failed: %s", stmt)
-                raise
-        await session.commit()
-    log.info("Startup migrations applied (%d statement(s)).", len(MIGRATIONS))
 
 
 async def main() -> None:
