@@ -120,6 +120,119 @@ async def _configure_clone_bot_profile(
         log.warning("Could not configure clone profile", exc_info=True)
 
 
+
+async def _get_wallet_view(user_id: int) -> tuple[int, int, int]:
+    async with AsyncSessionLocal() as session:
+        wallet = await get_wallet(session, user_id)
+        await session.commit()
+        return wallet.balance, wallet.lifetime_earned, wallet.lifetime_spent
+
+
+async def _send_balance(target, user_id: int) -> None:
+    balance, earned, spent = await _get_wallet_view(user_id)
+    text = (
+        "**Nexora Balance**\n\n"
+        f"> Available\n**{balance:,} coins**\n\n"
+        f"→ Earned: **{earned:,} coins**\n"
+        f"→ Spent: **{spent:,} coins**\n\n"
+        "Choose an action below."
+    )
+    markup = InlineKeyboardMarkup([
+        [btn(SUCCESS, "Add Balance", "balance:add", icon=EMOJI_FLAG_IN)],
+        [
+            btn(DEFAULT, "Gift Code", "redeem", icon=EMOJI_CHECK),
+            btn(DEFAULT, "Transactions", "balance:tx", icon=EMOJI_SIREN),
+        ],
+        [btn(DEFAULT, "Referrals", "referrals", icon=EMOJI_STAR)],
+        [btn(DANGER, "Back", "home", icon=EMOJI_OCTAGON)],
+    ])
+    try:
+        await target.edit_text(text, reply_markup=markup)
+    except RPCError:
+        await target.reply_text(text, reply_markup=markup)
+
+
+async def _send_transactions(target, user_id: int) -> None:
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(NexoraWalletTransaction)
+            .where(NexoraWalletTransaction.user_id == user_id)
+            .order_by(NexoraWalletTransaction.created_at.desc())
+            .limit(12)
+        )
+        rows = result.scalars().all()
+    lines = ["**Transactions**", "", "> Latest coin activity"]
+    if not rows:
+        lines.append("→ No transactions yet.")
+    for row in rows:
+        sign = "+" if row.amount > 0 else ""
+        lines.append(f"→ **{sign}{row.amount:,}** · {row.note or row.kind.replace('_', ' ').title()}")
+    try:
+        await target.edit_text("\n".join(lines), reply_markup=back_kb("balance"))
+    except RPCError:
+        await target.reply_text("\n".join(lines), reply_markup=back_kb("balance"))
+
+
+async def _send_referrals(client: Client, target, user_id: int) -> None:
+    me = await client.get_me()
+    async with AsyncSessionLocal() as session:
+        economy = await get_economy_settings(session)
+        invited = await session.scalar(
+            select(func.count()).select_from(NexoraReferral).where(
+                NexoraReferral.referrer_user_id == user_id
+            )
+        ) or 0
+        qualified = await session.scalar(
+            select(func.count()).select_from(NexoraReferral).where(
+                NexoraReferral.referrer_user_id == user_id,
+                NexoraReferral.qualified.is_(True),
+            )
+        ) or 0
+    link = f"https://t.me/{me.username}?start=ref_{user_id}"
+    text = (
+        "**Referral Center**\n\n"
+        "> Invite friends with your personal link.\n\n"
+        f"→ Qualified: **{qualified} / {invited}**\n"
+        f"→ Your reward: **{economy.referral_reward} coins**\n"
+        f"→ New-user bonus: **{economy.referred_reward} coins**\n\n"
+        f"→ Link: {link}"
+    )
+    markup = InlineKeyboardMarkup([
+        [btn(PRIMARY, "Share Link", url=f"https://t.me/share/url?url={link}", icon=EMOJI_STAR)],
+        [btn(DANGER, "Back", "home", icon=EMOJI_OCTAGON)],
+    ])
+    try:
+        await target.edit_text(text, reply_markup=markup)
+    except RPCError:
+        await target.reply_text(text, reply_markup=markup)
+
+
+async def _send_templates(target) -> None:
+    from templates.registry import available_templates
+    templates = available_templates()
+    if not templates:
+        text = (
+            "**Template Marketplace**\n\n"
+            "> The V2 catalog is being rebuilt.\n\n"
+            "→ Legacy templates are retired and hidden.\n"
+            "→ New templates will appear here when released."
+        )
+        markup = back_kb()
+    else:
+        rows = []
+        lines = ["**Template Marketplace**", "", "> Released templates"]
+        for item in templates:
+            lines.append(f"→ **{item.name}** · {item.description}")
+            rows.append([btn(PRIMARY, item.name, f"tpl:{item.slug}", icon=EMOJI_SPARKLE)])
+        rows.append([btn(DANGER, "Back", "home", icon=EMOJI_OCTAGON)])
+        text = "\n".join(lines)
+        markup = InlineKeyboardMarkup(rows)
+    try:
+        await target.edit_text(text, reply_markup=markup)
+    except RPCError:
+        await target.reply_text(text, reply_markup=markup)
+
+
 def register_main_handlers(app: Client) -> None:
 
     # ── /start ────────────────────────────────────────────────────────────────
