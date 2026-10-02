@@ -971,9 +971,9 @@ def register_main_handlers(app: Client) -> None:
                 total_bots = await session.scalar(select(func.count()).select_from(BotModel)) or 0
                 total_wallets = await session.scalar(select(func.count()).select_from(NexoraWallet)) or 0
             text = (
-                "**Platform Statistics**\\n\\n"
-                f"→ Owners: **{total_owners}**\\n"
-                f"→ Bots: **{total_bots}**\\n"
+                "**Platform Statistics**\n\n"
+                f"→ Owners: **{total_owners}**\n"
+                f"→ Bots: **{total_bots}**\n"
                 f"→ Coin wallets: **{total_wallets}**"
             )
             try:
@@ -993,7 +993,7 @@ def register_main_handlers(app: Client) -> None:
             text = (
                 f"💂 **@{bot_row.bot_username}**\n\n"
                 f"Type: {type_label}\n\n"
-                "→ Public commands are in the bot menu.\\n→ Owner controls are kept separate."
+                "→ Public commands are in the bot menu.\n→ Owner controls are kept separate."
             )
             try:
                 await cq.message.edit_text(
@@ -1246,11 +1246,11 @@ def register_main_handlers(app: Client) -> None:
                 ) or 0
                 referrals = await session.scalar(select(func.count()).select_from(NexoraReferral)) or 0
             await cq.message.edit_text(
-                "**Platform Statistics**\\n\\n"
-                f"→ Owners: **{owners}**\\n"
-                f"→ Bots: **{bots}**\\n"
-                f"→ Coin wallets: **{wallets}**\\n"
-                f"→ Referrals: **{referrals}**\\n"
+                "**Platform Statistics**\n\n"
+                f"→ Owners: **{owners}**\n"
+                f"→ Bots: **{bots}**\n"
+                f"→ Coin wallets: **{wallets}**\n"
+                f"→ Referrals: **{referrals}**\n"
                 f"→ Pending payments: **{payments}**",
                 reply_markup=back_kb("adm:home"),
             )
