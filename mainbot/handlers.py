@@ -701,13 +701,35 @@ def register_main_handlers(app: Client) -> None:
                 )
                 return
 
-        main_pending.pop(message.from_user.id, None)
+        from templates.registry import available_templates
+        templates = available_templates()
+        if not templates:
+            main_pending.pop(message.from_user.id, None)
+            await status_msg.edit_text(
+                f"**@{me.username} verified**\n\n"
+                "> The V2 marketplace has no released templates yet.\n\n"
+                "→ Your token is valid and was not stored.\n"
+                "→ Return to **Templates** when a release is published.",
+                reply_markup=back_kb(),
+            )
+            return
+
+        main_pending[message.from_user.id] = PendingAction(
+            "await_template",
+            {
+                "token": token,
+                "username": me.username,
+                "name": me.first_name or me.username or "Nexora Bot",
+            },
+        )
+        rows = [
+            [btn(PRIMARY, item.name, f"tpl:{item.slug}", icon=EMOJI_SPARKLE)]
+            for item in templates
+        ]
+        rows.append([btn(DANGER, "Cancel", "home", icon=EMOJI_OCTAGON)])
         await status_msg.edit_text(
-            f"✅ **Bot verified:** @{me.username}\n\n"
-            "🧩 **Template marketplace is being rebuilt.**\n\n"
-            "Legacy clone templates are no longer available in the new Factory.\n"
-            "New templates will be added through the V2 template registry.",
-            reply_markup=back_kb(),
+            f"**@{me.username} verified**\n\n> Choose a released template.",
+            reply_markup=InlineKeyboardMarkup(rows),
         )
 
     async def _create_bot(
@@ -746,11 +768,6 @@ def register_main_handlers(app: Client) -> None:
             session.add(BotSettings(bot_id=bot_row.id))
             await session.commit()
             new_bot_id = bot_row.id
-
-        # Seed cricket questions if cricket template
-        if bot_type == "cricket":
-            from templates.cricket.handlers import seed_default_questions
-            await seed_default_questions(new_bot_id)
 
         main_pending.pop(user_id, None)
 
