@@ -784,7 +784,7 @@ def register_main_handlers(app: Client) -> None:
             )
             return
 
-        # Auto-configure commands, description, and about text
+        # Auto-configure only public commands from the V2 manifest.
         try:
             me = await client.get_me()
             main_username = me.username or "NexoraBot"
@@ -792,36 +792,23 @@ def register_main_handlers(app: Client) -> None:
         except Exception:
             log.warning("Auto-profile config failed (non-fatal)", exc_info=True)
 
+        type_label = _template_label(bot_type)
         await _log_main(
             client,
-            f"🚨 ➕ New clone created\n"
-            f"Type: {bot_type}\n"
-            f"Owner: {user_id}\n"
-            f"Bot: @{bot_username} (id {new_bot_id})",
+            f"New bot created\n→ Template: {type_label}\n→ Owner: {user_id}\n→ Bot: @{bot_username}",
         )
-
-        type_label = _template_label(bot_type)
-        next_step_map = {
-            "linkprotect": "Send `/owner` in your bot to configure links.",
-            "cricket":     "Send `/owner` in your bot to set up your first tour and registration questions.",
-            "filestore":   "Send `/owner` in your bot to upload files & set channels.",
-        }
-        next_step = next_step_map.get(bot_type, "Send `/owner` in your bot to configure it.")
-
         await notify_owner(
-            f"🤖 **New bot created**\n"
-            f"Type: {type_label}\n"
-            f"Bot: @{bot_username}\n"
-            f"Owner ID: `{user_id}`"
+            f"New bot created\n→ Template: {type_label}\n→ Bot: @{bot_username}\n→ Owner: {user_id}"
         )
-
         await status_msg.edit_text(
-            f"✨ **Bot Created!** — {type_label}\n\n"
-            f"@{bot_username} is now live.\n\n"
-            f"**Next step:** {next_step}",
+            f"**Bot is live**\n\n"
+            f"→ @{bot_username}\n"
+            f"→ Template: **{type_label}**\n\n"
+            "> Public commands have been configured automatically.\n"
+            "> Owner/admin controls are kept separate.",
             reply_markup=InlineKeyboardMarkup([
                 [btn(SUCCESS, "Open Bot", url=f"https://t.me/{bot_username}", icon=EMOJI_GUARD)],
-                [btn(DEFAULT, "My Bots",  "mybots",                            icon=EMOJI_TOOLS)],
+                [btn(DEFAULT, "My Bots", "mybots", icon=EMOJI_TOOLS)],
             ]),
         )
 
