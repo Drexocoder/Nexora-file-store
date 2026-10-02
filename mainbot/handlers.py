@@ -1222,7 +1222,7 @@ def register_main_handlers(app: Client) -> None:
                 await cq.message.edit_text(
                     "**Add Verification Channel**\n\n"
                     "> Forward a channel message or send its username.\n"
-                    "→ The main bot must be an admin there first."
+                    "→ The main bot must be an admin there first.",
                     reply_markup=InlineKeyboardMarkup([[btn(DANGER, "Cancel", "adm:fsub", icon=EMOJI_OCTAGON)]]),
                 )
             except RPCError:
