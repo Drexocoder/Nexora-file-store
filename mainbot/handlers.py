@@ -245,15 +245,15 @@ async def _redeem_code(message: Message, code: str) -> None:
         balance = wallet.balance
     if not ok:
         await message.reply_text(
-            f"**Gift Code**\\n\\n> {reason}",
+            f"**Gift Code**\n\n> {reason}",
             reply_markup=back_kb("balance"),
         )
         return
     await notify_main_log(
-        f"Gift code redeemed\\n→ User: {message.from_user.id}\\n→ Coins: {coins}"
+        f"Gift code redeemed\n→ User: {message.from_user.id}\n→ Coins: {coins}"
     )
     await message.reply_text(
-        f"**Code accepted**\\n\\n> Added **{coins} coins**.\\n→ Balance: **{balance} coins**",
+        f"**Code accepted**\n\n> Added **{coins} coins**.\n→ Balance: **{balance} coins**",
         reply_markup=back_kb("balance"),
     )
 
@@ -329,7 +329,7 @@ async def _handle_gift_code(message: Message) -> None:
     await message.reply_text(
         f"**Gift code created**\n\n→ Code: {code}\n→ Value: **{coins} coins**\n"
     expiry_label = "none" if not days else f"{days} day(s)"
-        f"→ Uses: **{uses}**\\n→ Expiry: **{expiry_label}**",
+        f"→ Uses: **{uses}**\n→ Expiry: **{expiry_label}**",
         reply_markup=back_kb("adm:economy"),
     )
 
@@ -577,12 +577,12 @@ def register_main_handlers(app: Client) -> None:
         if not bots:
             try:
                 await target.edit_text(
-                    "**My Bots**\\n\\n> You have not connected a bot yet.\\n→ Use Create Bot to get started.",
+                    "**My Bots**\n\n> You have not connected a bot yet.\n→ Use Create Bot to get started.",
                     reply_markup=back_kb(),
                 )
             except RPCError:
                 await target.reply_text(
-                    "**My Bots**\\n\\n> You have not connected a bot yet.\\n→ Use Create Bot to get started.",
+                    "**My Bots**\n\n> You have not connected a bot yet.\n→ Use Create Bot to get started.",
                     reply_markup=back_kb(),
                 )
             return
@@ -600,11 +600,11 @@ def register_main_handlers(app: Client) -> None:
         rows.append([btn(DANGER, "Back", "home", icon=EMOJI_OCTAGON)])
         try:
             await target.edit_text(
-                f"**My Bots**\\n\\n> Connected bots: **{len(bots)}**", reply_markup=InlineKeyboardMarkup(rows)
+                f"**My Bots**\n\n> Connected bots: **{len(bots)}**", reply_markup=InlineKeyboardMarkup(rows)
             )
         except RPCError:
             await target.reply_text(
-                f"**My Bots**\\n\\n> Connected bots: **{len(bots)}**", reply_markup=InlineKeyboardMarkup(rows)
+                f"**My Bots**\n\n> Connected bots: **{len(bots)}**", reply_markup=InlineKeyboardMarkup(rows)
             )
 
     async def _send_rmbot_list(client: Client, user_id: int, target) -> None:
@@ -616,9 +616,9 @@ def register_main_handlers(app: Client) -> None:
 
         if not bots:
             try:
-                "**Remove a Bot**\\n\\n> You have no connected bots.",
+                "**Remove a Bot**\n\n> You have no connected bots.",
             except RPCError:
-                "**Remove a Bot**\\n\\n> You have no connected bots.",
+                "**Remove a Bot**\n\n> You have no connected bots.",
             return
 
         rows = []
@@ -628,11 +628,11 @@ def register_main_handlers(app: Client) -> None:
         rows.append([btn(PRIMARY, "Back", "home", icon=EMOJI_OCTAGON)])
         try:
             await target.edit_text(
-                "**Remove a Bot**\\n\\n> Choose the bot you want to disconnect.",
+                "**Remove a Bot**\n\n> Choose the bot you want to disconnect.",
             )
         except RPCError:
             await target.reply_text(
-                "**Remove a Bot**\\n\\n> Choose the bot you want to disconnect.",
+                "**Remove a Bot**\n\n> Choose the bot you want to disconnect.",
             )
 
     # ── text router ───────────────────────────────────────────────────────────
@@ -664,8 +664,8 @@ def register_main_handlers(app: Client) -> None:
         token = message.text.strip()
         if ":" not in token or len(token.split(":")[0]) < 5:
             await message.reply_text(
-                "**Token check failed**\\n\\n> Send the exact token from @BotFather.",
-                "**Token check failed**\\n\\n> Send the exact token from @BotFather.",
+                "**Token check failed**\n\n> Send the exact token from @BotFather.",
+                "**Token check failed**\n\n> Send the exact token from @BotFather.",
                 reply_markup=back_kb(),
             )
             return
@@ -855,9 +855,9 @@ def register_main_handlers(app: Client) -> None:
                     ])
                 rows.append([btn(GREEN, "Verify Membership", "main_verify", icon=EMOJI_CHECK)])
                 text = (
-                    "**Verification pending**\\n\\n"
-                    "> Some channels are still missing.\\n"
-                    f"→ Remaining: **{len(missing)}**\\n"
+                    "**Verification pending**\n\n"
+                    "> Some channels are still missing.\n"
+                    f"→ Remaining: **{len(missing)}**\n"
                     "> Only the remaining channels are shown."
                 )
                 try:
