@@ -1200,13 +1200,13 @@ def register_main_handlers(app: Client) -> None:
                 result = await session.execute(select(MainBotChannel))
                 channels = result.scalars().all()
 
-            lines = ["😈 **Main Bot Force-Subscribe Channels**\n"]
+            lines = ["**Main Bot Verification Channels**\n"]
             rows = []
             if not channels:
-                lines.append("No channels configured yet.")
+                lines.append("> No channels configured.")
             for ch in channels:
                 label = ch.title or ch.username or str(ch.chat_id)
-                lines.append(f"• {label}")
+                lines.append(f"→ {label}")
                 rows.append([btn(DANGER, f"Remove {label}", f"adm:fsub_rm:{ch.id}", icon=EMOJI_TRASH)])
             rows.append([btn(SUCCESS, "Add Channel",  "adm:fsub_add", icon=EMOJI_SPARKLE)])
             rows.append([btn(DANGER,  "Back",         "adm:home",     icon=EMOJI_OCTAGON)])
@@ -1220,9 +1220,9 @@ def register_main_handlers(app: Client) -> None:
             main_pending[user_id] = PendingAction("await_main_fsub_channel")
             try:
                 await cq.message.edit_text(
-                    f"{TXT_INFO} Forward a message **from the channel** you want to require,\n"
-                    "or send its **@username**.\n\n"
-                    "Make sure the main bot is an admin in that channel first.",
+                    "**Add Verification Channel**\n\n"
+                    "> Forward a channel message or send its username.\n"
+                    "→ The main bot must be an admin there first."
                     reply_markup=InlineKeyboardMarkup([[btn(DANGER, "Cancel", "adm:fsub", icon=EMOJI_OCTAGON)]]),
                 )
             except RPCError:
@@ -1277,17 +1277,17 @@ def register_main_handlers(app: Client) -> None:
                 bots = result.scalars().all()
             if not bots:
                 try:
-                    await cq.message.edit_text("No bots yet.", reply_markup=InlineKeyboardMarkup([[btn(DANGER, "🔙 Back", "adm:home")]]))
+                    await cq.message.edit_text("No bots yet.", reply_markup=InlineKeyboardMarkup([[btn(DANGER, "Back", "adm:home")]]))
                 except RPCError:
                     pass
                 return
-            lines = ["🤖 **All Bots** (latest 20)\n"]
+            lines = ["**All Bots** (latest 20)\n"]
             for b in bots:
                 lines.append(f"→ @{b.bot_username or b.id} — owner {b.owner_id}")
             try:
                 await cq.message.edit_text(
                     "\n".join(lines),
-                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "🔙 Back", "adm:home", icon=EMOJI_OCTAGON)]]),
+                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "Back", "adm:home", icon=EMOJI_OCTAGON)]]),
                 )
             except RPCError:
                 pass
@@ -1298,14 +1298,14 @@ def register_main_handlers(app: Client) -> None:
                     select(Owner).order_by(Owner.created_at.desc()).limit(20)
                 )
                 owners = result.scalars().all()
-            lines = ["👥 **All Owners** (latest 20)\n"]
+            lines = ["**All Owners** (latest 20)\n"]
             for o in owners:
                 handle = f"@{o.username}" if o.username else f"id:{o.telegram_id}"
                 lines.append(f"• {o.first_name or 'Unknown'} {handle}")
             try:
                 await cq.message.edit_text(
                     "\n".join(lines),
-                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "🔙 Back", "adm:home", icon=EMOJI_OCTAGON)]]),
+                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "Back", "adm:home", icon=EMOJI_OCTAGON)]]),
                 )
             except RPCError:
                 pass
@@ -1320,13 +1320,13 @@ def register_main_handlers(app: Client) -> None:
                     .limit(10)
                 )
                 rows = result.all()
-            lines = ["🔥 **Top Bots by Users**\n"]
+            lines = ["**Top Bots by Users**\n"]
             for i, (uname, cnt) in enumerate(rows, 1):
                 lines.append(f"{i}. @{uname or '?'} — {cnt} users")
             try:
                 await cq.message.edit_text(
                     "\n".join(lines),
-                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "🔙 Back", "adm:home", icon=EMOJI_OCTAGON)]]),
+                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "Back", "adm:home", icon=EMOJI_OCTAGON)]]),
                 )
             except RPCError:
                 pass
@@ -1338,13 +1338,13 @@ def register_main_handlers(app: Client) -> None:
                     select(OwnerLog).order_by(OwnerLog.time.desc()).limit(15)
                 )
                 logs_list = result.scalars().all()
-            lines = ["📋 **Recent Owner Actions**\n"]
+            lines = ["**Recent Owner Actions**\n"]
             for entry in logs_list:
                 lines.append(f"• Bot {entry.bot_id}: {entry.action[:60]}")
             try:
                 await cq.message.edit_text(
                     "\n".join(lines) if len(lines) > 1 else "No logs yet.",
-                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "🔙 Back", "adm:home", icon=EMOJI_OCTAGON)]]),
+                    reply_markup=InlineKeyboardMarkup([[btn(DANGER, "Back", "adm:home", icon=EMOJI_OCTAGON)]]),
                 )
             except RPCError:
                 pass
