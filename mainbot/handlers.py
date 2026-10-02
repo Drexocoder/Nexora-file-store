@@ -453,8 +453,10 @@ def register_main_handlers(app: Client) -> None:
                     ])
                 rows.append([btn(GREEN, "Verify Membership", "main_verify", icon=EMOJI_CHECK)])
                 caption = (
-                    "👋 **Welcome to Nexora File Store!**\n\n"
-                    "Join the required channels below, then press **Verify Membership**."
+                    "**Quick verification**\n\n"
+                    "> Join every channel shown below.\n"
+                    "> When you finish, press **Verify Membership**.\n\n"
+                    f"→ Remaining: **{len(missing)}**"
                 )
                 try:
                     await message.reply_photo(IMG_WELCOME, caption=caption,
