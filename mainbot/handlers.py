@@ -270,6 +270,7 @@ async def _handle_utr(message: Message) -> None:
             reply_markup=back_kb("balance:add"),
         )
         return
+
     coins = int(pending.data["coins"])
     amount = int(pending.data["amount"])
     async with AsyncSessionLocal() as session:
@@ -284,15 +285,16 @@ async def _handle_utr(message: Message) -> None:
         await session.flush()
         order_id = order.id
         await session.commit()
+
     await notify_owner(
         f"New UPI payment\n→ Order: #{order_id}\n→ User: {message.from_user.id}\n"
         f"→ Amount: ₹{amount}\n→ Coins: {coins}\n→ UTR: {utr}"
     )
     await notify_main_log(
-        f"UPI payment submitted\n→ Order: #{order_id}\n→ Amount: ₹{amount}\n→ Coins: {coins}",
+        f"UPI payment submitted\n→ Order: #{order_id}\n→ Amount: ₹{amount}\n→ Coins: {coins}"
     )
-    await message.reply_text(
     await notify_public(f"UPI payment submitted · order #{order_id} · {coins} coins")
+    await message.reply_text(
         f"**Payment submitted**\n\n> Order: #{order_id}\n> Status: **Pending review**\n\n"
         "→ Coins are added after the UTR is approved by the main owner.",
         reply_markup=back_kb("balance"),
@@ -308,28 +310,34 @@ async def _handle_gift_code(message: Message) -> None:
         coins = int(parts[0])
         uses = int(parts[1]) if len(parts) > 1 else 1
         days = int(parts[2]) if len(parts) > 2 else 0
-        if coins <= 0 or uses <= 0:
+        if coins <= 0 or uses <= 0 or days < 0:
             raise ValueError
-    except ValueError:
+    except (ValueError, IndexError):
         await message.reply_text(
             "**Gift Code Setup**\n\n> Format: coins uses days\n→ Example: 500 10 7",
             reply_markup=back_kb("adm:economy"),
         )
         return
+
     expires = dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=days) if days else None
+    expiry_label = "none" if not days else f"{days} day(s)"
     async with AsyncSessionLocal() as session:
         code = new_gift_code()
-        session.add(NexoraGiftCode(
-            code=code,
-            coins=coins,
-            max_uses=uses,
-            expires_at=expires,
-        ))
+        session.add(
+            NexoraGiftCode(
+                code=code,
+                coins=coins,
+                max_uses=uses,
+                expires_at=expires,
+            )
+        )
         await session.commit()
-    await notify_main_log(f"Gift code created\n→ Code: {code}\n→ Coins: {coins}\n→ Uses: {uses}")
+
+    await notify_main_log(
+        f"Gift code created\n→ Code: {code}\n→ Coins: {coins}\n→ Uses: {uses}"
+    )
     await message.reply_text(
         f"**Gift code created**\n\n→ Code: {code}\n→ Value: **{coins} coins**\n"
-    expiry_label = "none" if not days else f"{days} day(s)"
         f"→ Uses: **{uses}**\n→ Expiry: **{expiry_label}**",
         reply_markup=back_kb("adm:economy"),
     )
