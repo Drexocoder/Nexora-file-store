@@ -1,6 +1,6 @@
 """Minimal clone runtime while the Nexora V2 template registry is rebuilt.
 
-Legacy File Store, Link Protect and Cricket implementations are intentionally
+All legacy template implementations are intentionally
 removed from the runtime. New templates will register their own handlers.
 """
 
@@ -21,7 +21,7 @@ def register_clone_handlers(app: Client) -> None:
     async def start(client: Client, message: Message) -> None:
         await message.reply_text(
             "**Template unavailable**\n\n"
-            "> This bot is using a legacy template that is no longer supported.\n\n"
+            "> This clone is retired and no longer supported.\n\n"
             "→ New Nexora V2 templates will be available from the Factory."
         )
 
@@ -29,6 +29,6 @@ def register_clone_handlers(app: Client) -> None:
     async def help_or_owner(client: Client, message: Message) -> None:
         await message.reply_text(
             "**Nexora V2**\n\n"
-            "> This legacy bot has been retired.\n"
+            "> This clone has been retired.\n"
             "> Create or deploy a supported V2 template from the main Factory."
         )
