@@ -117,13 +117,23 @@ IMG_CLONE   = "https://graph.org/file/874c7523cf9fb087baae4-787a191131ca5d0bb7.j
 # ── Keyboards ─────────────────────────────────────────────────────────────────
 def main_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
-        [btn(PRIMARY, "Create Bot",      "newbot",  icon=EMOJI_SPARKLE)],
+        [btn(PRIMARY, "Create Bot", "newbot", icon=EMOJI_SPARKLE)],
         [
-            btn(DEFAULT, "My Bots",      "mybots",  icon=EMOJI_STAR),
-            btn(DEFAULT, "Help",         "help",    icon=EMOJI_TOOLS),
+            btn(SUCCESS, "Balance", "balance", icon=EMOJI_STAR),
+            btn(DEFAULT, "My Bots", "mybots", icon=EMOJI_GUARD),
         ],
-        [btn(DEFAULT, "Platform Stats",  "stats",   icon=EMOJI_CHART)],
-        [btn(PRIMARY, "Support",         url=SUPPORT_URL, icon=EMOJI_PHONE)],
+        [
+            btn(DEFAULT, "Referrals", "referrals", icon=EMOJI_LINK),
+            btn(DEFAULT, "Gift Code", "redeem", icon=EMOJI_CHECK),
+        ],
+        [
+            btn(DEFAULT, "Templates", "templates", icon=EMOJI_TOOLS),
+            btn(DEFAULT, "Platform Stats", "stats", icon=EMOJI_CHART),
+        ],
+        [
+            btn(DEFAULT, "Help", "help", icon=EMOJI_SPARKLE),
+            btn(PRIMARY, "Support", url=SUPPORT_URL, icon=EMOJI_PHONE),
+        ],
     ])
 
 
@@ -135,12 +145,16 @@ def admin_menu_kb() -> InlineKeyboardMarkup:
             btn(PRIMARY, "All Bots",       "adm:bots",      icon=EMOJI_GLOBE),
         ],
         [
-            btn(SUCCESS, "Broadcast All",  "adm:broadcast", icon=EMOJI_MIC),
-            btn(DEFAULT, "All Owners",     "adm:owners",    icon=EMOJI_GUARD),
+            btn(SUCCESS, "Broadcast All", "adm:broadcast", icon=EMOJI_MIC),
+            btn(DEFAULT, "All Owners", "adm:owners", icon=EMOJI_GUARD),
         ],
         [
-            btn(YELLOW,  "Recent Logs",    "adm:logs",      icon=EMOJI_SIREN),
-            btn(YELLOW,  "Top Bots",       "adm:topbots",   icon=EMOJI_FIRE),
+            btn(YELLOW, "Economy", "adm:economy", icon=EMOJI_STAR),
+            btn(YELLOW, "Payments", "adm:payments", icon=EMOJI_FLAG_IN),
+        ],
+        [
+            btn(YELLOW, "Recent Logs", "adm:logs", icon=EMOJI_SIREN),
+            btn(YELLOW, "Top Bots", "adm:topbots", icon=EMOJI_FIRE),
         ],
         [
             btn(SUCCESS, "Main FSub",      "adm:fsub",      icon=EMOJI_DEVIL),
