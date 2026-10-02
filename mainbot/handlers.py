@@ -577,12 +577,12 @@ def register_main_handlers(app: Client) -> None:
         if not bots:
             try:
                 await target.edit_text(
-                    f"{TXT_WARN} You haven't created any bots yet. Use /newbot to get started.",
+                    "**My Bots**\\n\\n> You have not connected a bot yet.\\n→ Use Create Bot to get started.",
                     reply_markup=back_kb(),
                 )
             except RPCError:
                 await target.reply_text(
-                    f"{TXT_WARN} You haven't created any bots yet. Use /newbot to get started.",
+                    "**My Bots**\\n\\n> You have not connected a bot yet.\\n→ Use Create Bot to get started.",
                     reply_markup=back_kb(),
                 )
             return
@@ -600,11 +600,11 @@ def register_main_handlers(app: Client) -> None:
         rows.append([btn(DANGER, "Back", "home", icon=EMOJI_OCTAGON)])
         try:
             await target.edit_text(
-                f"💂 **Your Bots** ({len(bots)} total)", reply_markup=InlineKeyboardMarkup(rows)
+                f"**My Bots**\\n\\n> Connected bots: **{len(bots)}**", reply_markup=InlineKeyboardMarkup(rows)
             )
         except RPCError:
             await target.reply_text(
-                f"💂 **Your Bots** ({len(bots)} total)", reply_markup=InlineKeyboardMarkup(rows)
+                f"**My Bots**\\n\\n> Connected bots: **{len(bots)}**", reply_markup=InlineKeyboardMarkup(rows)
             )
 
     async def _send_rmbot_list(client: Client, user_id: int, target) -> None:
@@ -616,9 +616,9 @@ def register_main_handlers(app: Client) -> None:
 
         if not bots:
             try:
-                await target.edit_text(f"{TXT_WARN} You have no bots to remove.", reply_markup=back_kb())
+                "**Remove a Bot**\\n\\n> You have no connected bots.",
             except RPCError:
-                await target.reply_text(f"{TXT_WARN} You have no bots to remove.", reply_markup=back_kb())
+                "**Remove a Bot**\\n\\n> You have no connected bots.",
             return
 
         rows = []
@@ -628,11 +628,11 @@ def register_main_handlers(app: Client) -> None:
         rows.append([btn(PRIMARY, "Back", "home", icon=EMOJI_OCTAGON)])
         try:
             await target.edit_text(
-                "⛔ **Select a bot to remove**", reply_markup=InlineKeyboardMarkup(rows)
+                "**Remove a Bot**\\n\\n> Choose the bot you want to disconnect.",
             )
         except RPCError:
             await target.reply_text(
-                "⛔ **Select a bot to remove**", reply_markup=InlineKeyboardMarkup(rows)
+                "**Remove a Bot**\\n\\n> Choose the bot you want to disconnect.",
             )
 
     # ── text router ───────────────────────────────────────────────────────────
@@ -664,8 +664,8 @@ def register_main_handlers(app: Client) -> None:
         token = message.text.strip()
         if ":" not in token or len(token.split(":")[0]) < 5:
             await message.reply_text(
-                f"{TXT_ERR} That doesn't look like a valid bot token. "
-                "Send the token @BotFather gave you, or press Back.",
+                "**Token check failed**\\n\\n> Send the exact token from @BotFather.",
+                "**Token check failed**\\n\\n> Send the exact token from @BotFather.",
                 reply_markup=back_kb(),
             )
             return
